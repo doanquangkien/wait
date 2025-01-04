@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chờ iPhone</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://apple.com/favicon.ico">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://apple.com/favicon.ico">
+    <link rel="apple-touch-icon" sizes="120x120" href="https://apple.com/favicon.ico">
+    <link rel="apple-touch-icon" sizes="76x76" href="https://apple.com/favicon.ico">
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(to bottom, #1c1c1e, #000000); /* Gradient nền tối */
+            color: #f0f0f0; /* Chữ sáng hơn */
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            flex-direction: column; /* Thay đổi hướng để phù hợp hơn */
+            padding: 20px; /* Thêm padding xung quanh */
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 30px; /* Khoảng cách giữa đồng hồ và lịch */
+        }
+
+        .clock-container {
+            position: relative;
+            width: 250px; /* Kích thước nhỏ gọn hơn */
+            height: 250px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.05); /* Nền mờ cho đồng hồ */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Bóng đổ nhẹ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .clock-face {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            background-color: rgba(0, 0, 0, 0.8); /* Nền bên trong đồng hồ */
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .number {
+            position: absolute;
+            font-size: 18px; /* Chữ số nhỏ hơn */
+            font-weight: normal; /* Không in đậm */
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            --angle: 0;
+            transform: rotate(var(--angle));
+            transform-origin: center;
+            top: 0;
+            left: 0;
+            color: #ddd; /* Màu chữ số */
+        }
+
+        .number span {
+            position: absolute;
+            transform: rotate(calc(var(--angle) * -1));
+            top: 12px; /* Vị trí chữ số */
+            left: 50%;
+            transform: translateX(-50%) rotate(calc(var(--angle) * -1));
+        }
+
+        .hand {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 4px;
+            transform-origin: bottom center;
+            bottom: 50%;
+            left: 50%;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 0.1s cubic-bezier(0.4, 2.08, 0.55, 0.44); /* Hiệu ứng mượt mà hơn */
+        }
+
+        .hour-hand {
+            width: 5px;
+            height: 30%;
+            background-color: #eee;
+        }
+
+        .minute-hand {
+            width: 3px;
+            height: 40%;
+        }
+
+        .second-hand {
+            width: 1px;
+            height: 45%;
+            background-color: #ff9f0a; /* Màu cam đặc trưng */
+        }
+
+        .center-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .calendar-container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .month {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .days-header, .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .days-header div {
+            font-size: 14px;
+            font-weight: normal;
+            color: #999;
+            text-align: center;
+        }
+
+        .days div {
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+            color: #ccc;
+        }
+
+        .days div:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .days div.current-day {
+            background-color: #0a84ff; /* Màu xanh dương của Apple */
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Responsive layout */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .clock-container, .calendar-container {
+                margin-bottom: 20px;
+                width: 80%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="clock-container">
+            <div class="clock-face">
+                <div class="number" style="--angle: 30deg;"><span>1</span></div>
+                <div class="number" style="--angle: 60deg;"><span>2</span></div>
+                <div class="number" style="--angle: 90deg;"><span>3</span></div>
+                <div class="number" style="--angle: 120deg;"><span>4</span></div>
+                <div class="number" style="--angle: 150deg;"><span>5</span></div>
+                <div class="number" style="--angle: 180deg;"><span>6</span></div>
+                <div class="number" style="--angle: 210deg;"><span>7</span></div>
+                <div class="number" style="--angle: 240deg;"><span>8</span></div>
+                <div class="number" style="--angle: 270deg;"><span>9</span></div>
+                <div class="number" style="--angle: 300deg;"><span>10</span></div>
+                <div class="number" style="--angle: 330deg;"><span>11</span></div>
+                <div class="number" style="--angle: 0deg;"><span>12</span></div>
+                <div class="hand hour-hand"></div>
+                <div class="hand minute-hand"></div>
+                <div class="hand second-hand"></div>
+                <div class="center-dot"></div>
+            </div>
+        </div>
+        <div class="calendar-container">
+            <div class="month"></div>
+            <div class="days-header">
+                <div>T2</div>
+                <div>T3</div>
+                <div>T4</div>
+                <div>T5</div>
+                <div>T6</div>
+                <div>T7</div>
+                <div>CN</div>
+            </div>
+            <div class="days"></div>
+        </div>
+    </div>
+
+    <script>
+        const hourHand = document.querySelector('.hour-hand');
+        const minuteHand = document.querySelector('.minute-hand');
+        const secondHand = document.querySelector('.second-hand');
+        const monthElement = document.querySelector('.month');
+        const daysContainer = document.querySelector('.days');
+
+        const monthNames = ["THÁNG 1", "THÁNG 2", "THÁNG 3", "THÁNG 4", "THÁNG 5", "THÁNG 6",
+                            "THÁNG 7", "THÁNG 8", "THÁNG 9", "THÁNG 10", "THÁNG 11", "THÁNG 12"];
+
+        function setClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            const hourDegrees = ((hours / 12) * 360) + ((minutes / 60) * 30);
+            const minuteDegrees = (minutes / 60) * 360;
+            const secondDegrees = (seconds / 60) * 360;
+
+            hourHand.style.transform = `translateX(-50%) rotate(${hourDegrees}deg)`;
+            minuteHand.style.transform = `translateX(-50%) rotate(${minuteDegrees}deg)`;
+            secondHand.style.transform = `translateX(-50%) rotate(${secondDegrees}deg)`;
+        }
+
+        function updateCalendar() {
+            const now = new Date();
+            const month = now.getMonth();
+            const year = now.getFullYear();
+            const dayOfMonth = now.getDate();
+
+            monthElement.textContent = monthNames[month];
+
+            const firstDayOfMonth = new Date(year, month, 1);
+            const startingDayOfWeek = firstDayOfMonth.getDay();
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            daysContainer.innerHTML = '';
+
+            for (let i = 0; i < (startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1); i++) {
+                const emptyDiv = document.createElement('div');
+                daysContainer.appendChild(emptyDiv);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.textContent = day;
+                if (day === dayOfMonth) {
+                    dayDiv.classList.add('current-day');
+                }
+                daysContainer.appendChild(dayDiv);
+            }
+        }
+
+        setInterval(setClock, 1000);
+        setClock();
+
+        updateCalendar();
+    </script>
+</body>
+</html>
